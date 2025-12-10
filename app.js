@@ -69,11 +69,17 @@ const presets = {
 async function initFFmpeg() {
     if (ffmpegLoaded) return;
     
+    // Ensure DOM elements are available
+    if (!progressText || !progressBar) {
+        console.error('DOM elements not ready');
+        return;
+    }
+    
     try {
         progressText.textContent = 'Loading FFmpeg...';
         progressBar.style.width = '10%';
         
-        // Create FFmpeg instance
+        // Create FFmpeg instance (FFmpeg is imported as ES module)
         ffmpeg = new FFmpeg();
         
         // Configure logging and progress
@@ -510,5 +516,16 @@ function formatFileSize(bytes) {
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+}
+
+// Initialize when DOM is ready (ES modules defer automatically, but ensure everything is set up)
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        // Initialize preset
+        applyPreset('github-readme');
+    });
+} else {
+    // DOM already loaded
+    applyPreset('github-readme');
 }
 
