@@ -1,7 +1,5 @@
-// Import FFmpeg.wasm as ES module (avoids CORS issues on GitHub Pages)
-// Using esm.sh which is designed for ES modules and has proper CORS headers
-import { FFmpeg } from 'https://esm.sh/@ffmpeg/ffmpeg@0.12.10';
-import { fetchFile } from 'https://esm.sh/@ffmpeg/util@0.12.1';
+// FFmpeg.wasm loaded via UMD script tags (avoids worker CORS issues)
+// FFmpegWASM and FFmpegUtil are available globally from CDN scripts
 
 // FFmpeg instance
 let ffmpeg = null;
@@ -80,7 +78,8 @@ async function initFFmpeg() {
         progressText.textContent = 'Loading FFmpeg...';
         progressBar.style.width = '10%';
         
-        // Create FFmpeg instance (FFmpeg is imported as ES module)
+        // Create FFmpeg instance (from global UMD script)
+        const { FFmpeg } = FFmpegWASM;
         ffmpeg = new FFmpeg();
         
         // Configure logging and progress
@@ -88,11 +87,12 @@ async function initFFmpeg() {
             console.log(message);
         });
         
-        // Use jsdelivr for core files (more reliable for WASM files)
-        // esm.sh is great for JS modules but jsdelivr handles WASM better
+        // Use jsdelivr for all files (better CORS support for workers)
+        // Configure worker URL to avoid CORS issues on GitHub Pages
         await ffmpeg.load({
             coreURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core.js',
-            wasmURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core.wasm'
+            wasmURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core.wasm',
+            workerURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core.worker.js'
         });
         
         // Set up progress tracking
@@ -306,6 +306,8 @@ convertBtn.addEventListener('click', async () => {
         progressText.textContent = 'Reading video file...';
         progressBar.style.width = '10%';
         
+        // Use fetchFile from global FFmpegUtil
+        const { fetchFile } = FFmpegUtil;
         await ffmpeg.writeFile('input', await fetchFile(selectedFile));
         
         progressBar.style.width = '20%';
