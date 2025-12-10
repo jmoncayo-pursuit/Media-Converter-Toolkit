@@ -73,23 +73,23 @@ async function initFFmpeg() {
     let UtilClass = null;
     
     // Wait for scripts to load (with timeout)
+    // Check window object explicitly for globals
     let attempts = 0;
-    while (attempts < 50) { // 5 seconds max wait
-        if (typeof FFmpegWASM !== 'undefined' && FFmpegWASM.FFmpeg) {
-            FFmpegClass = FFmpegWASM.FFmpeg;
-            UtilClass = FFmpegUtil;
-            break;
-        } else if (typeof createFFmpeg !== 'undefined') {
-            // Older API - use createFFmpeg
-            FFmpegClass = createFFmpeg;
-            break;
+    const maxAttempts = 100; // 10 seconds max wait
+    
+    while (attempts < maxAttempts) {
+        // Check for the expected globals on window object
+        if (window.FFmpegWASM && window.FFmpegWASM.FFmpeg) {
+            break; // Found it!
+        }
+        if (window.FFmpeg && typeof window.FFmpeg === 'function') {
+            break; // Alternative global name
+        }
+        if (window.createFFmpeg && typeof window.createFFmpeg === 'function') {
+            break; // Older API
         }
         await new Promise(resolve => setTimeout(resolve, 100));
         attempts++;
-    }
-    
-    if (!FFmpegClass) {
-        throw new Error('FFmpeg scripts failed to load. Please check your internet connection and refresh the page.');
     }
     
     // Ensure DOM elements are available (only show progress if elements exist)
@@ -101,27 +101,39 @@ async function initFFmpeg() {
             progressBar.style.width = '10%';
         }
         
-        // Create FFmpeg instance
-        if (typeof createFFmpeg !== 'undefined') {
-            // Older API
-            ffmpeg = createFFmpeg({ log: true });
-        } else {
-            // Newer API
-            const { FFmpeg } = FFmpegWASM;
+        // Create FFmpeg instance - try different APIs
+        if (window.FFmpegWASM && window.FFmpegWASM.FFmpeg) {
+            // Version 0.11.6+ UMD API
+            const { FFmpeg } = window.FFmpegWASM;
             ffmpeg = new FFmpeg();
+        } else if (window.FFmpeg && typeof window.FFmpeg === 'function') {
+            // Direct FFmpeg constructor
+            ffmpeg = new window.FFmpeg();
+        } else if (window.createFFmpeg) {
+            // Older API (0.10.x)
+            ffmpeg = window.createFFmpeg({ log: true });
+        } else {
+            throw new Error('FFmpeg library not found. Please refresh the page.');
         }
         
         // Configure logging and progress
-        ffmpeg.on('log', ({ message }) => {
-            console.log(message);
-        });
+        if (ffmpeg.on) {
+            ffmpeg.on('log', ({ message }) => {
+                console.log(message);
+            });
+        }
         
-        // Use older version (0.11.x) that works without SharedArrayBuffer/headers
-        // This version doesn't require cross-origin isolation headers
-        await ffmpeg.load({
-            coreURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.11.0/dist/umd/ffmpeg-core.js',
-            wasmURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.11.0/dist/umd/ffmpeg-core.wasm'
-        });
+        // Load FFmpeg core files
+        if (window.createFFmpeg && ffmpeg.load) {
+            // Older API - just load
+            await ffmpeg.load();
+        } else {
+            // Newer API - specify core files for version 0.11.x
+            await ffmpeg.load({
+                coreURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.11.0/dist/umd/ffmpeg-core.js',
+                wasmURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.11.0/dist/umd/ffmpeg-core.wasm'
+            });
+        }
         
         // Set up progress tracking
         ffmpeg.on('progress', ({ progress }) => {
