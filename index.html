@@ -191,11 +191,11 @@
         </footer>
     </div>
 
-    <!-- FFmpeg.wasm - Using unpkg CDN which has better availability -->
-    <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.10.1/dist/umd/ffmpeg.js" 
+    <!-- FFmpeg.wasm - Using version 0.9.8 which has confirmed UMD builds -->
+    <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.9.8/dist/umd/ffmpeg.js" 
             onload="console.log('FFmpeg script loaded'); console.log('createFFmpeg available:', typeof createFFmpeg !== 'undefined'); console.log('window.createFFmpeg:', typeof window.createFFmpeg)"
             onerror="console.error('FFmpeg script failed to load from unpkg')"></script>
-    <script src="https://unpkg.com/@ffmpeg/util@0.10.0/dist/umd/util.js" 
+    <script src="https://unpkg.com/@ffmpeg/util@0.9.8/dist/umd/util.js" 
             onload="console.log('FFmpegUtil script loaded')"
             onerror="console.error('FFmpegUtil script failed to load from unpkg')"></script>
     <script>
