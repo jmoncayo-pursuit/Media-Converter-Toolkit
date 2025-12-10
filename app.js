@@ -68,15 +68,24 @@ const presets = {
 async function initFFmpeg() {
     if (ffmpegLoaded) return;
     
-    // Ensure DOM elements are available
-    if (!progressText || !progressBar) {
-        console.error('DOM elements not ready');
-        return;
+    // Check if FFmpegWASM is available (might not be loaded yet)
+    if (typeof FFmpegWASM === 'undefined') {
+        console.warn('FFmpegWASM not loaded yet, waiting...');
+        // Wait a bit for scripts to load
+        await new Promise(resolve => setTimeout(resolve, 100));
+        if (typeof FFmpegWASM === 'undefined') {
+            throw new Error('FFmpegWASM failed to load. Please refresh the page.');
+        }
     }
     
+    // Ensure DOM elements are available (only show progress if elements exist)
+    const showProgress = progressText && progressBar;
+    
     try {
-        progressText.textContent = 'Loading FFmpeg...';
-        progressBar.style.width = '10%';
+        if (showProgress) {
+            progressText.textContent = 'Loading FFmpeg...';
+            progressBar.style.width = '10%';
+        }
         
         // Create FFmpeg instance (from global UMD script)
         const { FFmpeg } = FFmpegWASM;
@@ -103,13 +112,18 @@ async function initFFmpeg() {
         
         // FFmpeg is already loaded via load() call above
         ffmpegLoaded = true;
-        progressBar.style.width = '100%';
-        progressText.textContent = 'Ready!';
+        if (showProgress) {
+            progressBar.style.width = '100%';
+            progressText.textContent = 'Ready!';
+        }
         
         console.log('FFmpeg loaded successfully');
     } catch (error) {
         console.error('Failed to load FFmpeg:', error);
-        showError('Failed to initialize FFmpeg. Please refresh the page.');
+        // Only show error if DOM is ready and user is interacting
+        if (showProgress) {
+            showError('Failed to initialize FFmpeg. Please refresh the page.');
+        }
         throw error;
     }
 }
