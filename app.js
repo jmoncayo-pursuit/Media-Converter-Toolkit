@@ -79,6 +79,10 @@ async function initFFmpeg() {
     
     while (attempts < maxAttempts) {
         // Check for the expected globals on window object
+        // Version 0.10.1 uses createFFmpeg (prioritize this)
+        if (window.createFFmpeg && typeof window.createFFmpeg === 'function') {
+            break; // Found it! (Version 0.10.1)
+        }
         // Version 0.11.6 UMD exports as window.FFmpegWASM.FFmpeg
         if (window.FFmpegWASM && window.FFmpegWASM.FFmpeg) {
             break; // Found it!
@@ -87,12 +91,14 @@ async function initFFmpeg() {
         if (window.FFmpeg && typeof window.FFmpeg === 'function') {
             break; // Alternative global name
         }
-        // Older API (0.10.x)
-        if (window.createFFmpeg && typeof window.createFFmpeg === 'function') {
-            break; // Older API
-        }
         await new Promise(resolve => setTimeout(resolve, 100));
         attempts++;
+    }
+    
+    // Check if we found FFmpeg after waiting
+    if (attempts >= maxAttempts && !window.createFFmpeg && !window.FFmpegWASM && !window.FFmpeg) {
+        console.error('FFmpeg globals check failed. Available window keys:', Object.keys(window).filter(k => k.toLowerCase().includes('ffmpeg')));
+        throw new Error('FFmpeg scripts failed to load. Please check your internet connection and refresh the page.');
     }
     
     // Check if we found FFmpeg after waiting
@@ -111,16 +117,17 @@ async function initFFmpeg() {
         }
         
         // Create FFmpeg instance - try different APIs
-        if (window.FFmpegWASM && window.FFmpegWASM.FFmpeg) {
+        // Version 0.10.1 uses createFFmpeg API (prioritize this)
+        if (window.createFFmpeg && typeof window.createFFmpeg === 'function') {
+            // Version 0.10.1 API
+            ffmpeg = window.createFFmpeg({ log: true });
+        } else if (window.FFmpegWASM && window.FFmpegWASM.FFmpeg) {
             // Version 0.11.6+ UMD API
             const { FFmpeg } = window.FFmpegWASM;
             ffmpeg = new FFmpeg();
         } else if (window.FFmpeg && typeof window.FFmpeg === 'function') {
             // Direct FFmpeg constructor
             ffmpeg = new window.FFmpeg();
-        } else if (window.createFFmpeg) {
-            // Older API (0.10.x)
-            ffmpeg = window.createFFmpeg({ log: true });
         } else {
             throw new Error('FFmpeg library not found. Please refresh the page.');
         }
@@ -133,11 +140,11 @@ async function initFFmpeg() {
         }
         
         // Load FFmpeg core files
-        if (window.createFFmpeg && ffmpeg.load) {
-            // Older API - just load
+        if (window.createFFmpeg) {
+            // Version 0.10.1 API - just load (uses default CDN)
             await ffmpeg.load();
         } else {
-            // Newer API - specify core files for version 0.11.x
+            // Newer API - specify core files
             await ffmpeg.load({
                 coreURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.11.0/dist/umd/ffmpeg-core.js',
                 wasmURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.11.0/dist/umd/ffmpeg-core.wasm'
