@@ -18,6 +18,8 @@ outputs/
 # But allow original scripts/docs that reference these formats
 !*.sh
 !*.md
+# Allow screenshot.png for README
+!screenshot.png
 
 # Environment files
 .env
