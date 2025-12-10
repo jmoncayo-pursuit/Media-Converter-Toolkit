@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Media Converter Toolkit</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -190,8 +191,25 @@
         </footer>
     </div>
 
-    <!-- FFmpeg.wasm from CDN -->
-    <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js"></script>
+    <!-- FFmpeg.wasm - Using version 0.10.1 which has better UMD support -->
+    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.10.1/dist/umd/ffmpeg.js" onload="console.log('FFmpeg script loaded'); console.log('createFFmpeg available:', typeof createFFmpeg !== 'undefined')"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.10.0/dist/umd/util.js" onload="console.log('FFmpegUtil script loaded')"></script>
+    <script>
+        // Debug: Check what globals are available after scripts load
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                const ffmpegKeys = Object.keys(window).filter(k => 
+                    k.toLowerCase().includes('ffmpeg') || 
+                    k.toLowerCase().includes('wasm') ||
+                    k === 'createFFmpeg'
+                );
+                console.log('FFmpeg-related globals:', ffmpegKeys);
+                ffmpegKeys.forEach(key => {
+                    console.log(`  ${key}:`, typeof window[key], window[key]);
+                });
+            }, 2000);
+        });
+    </script>
     <script src="app.js"></script>
 </body>
 </html>

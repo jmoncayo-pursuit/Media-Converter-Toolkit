@@ -1,121 +1,57 @@
 # Media Converter Toolkit
 
-A web-based media conversion tool that converts videos to optimized web formats (MP4, WebM, GIF) using FFmpeg.
+A client-side media conversion tool that runs entirely in your browser. Convert videos to optimized web formats (MP4, WebM, GIF) using FFmpeg.wasm - no server required!
 
 ## Features
 
 - 🎬 **Multiple Formats**: Convert to MP4, WebM, or animated GIF
 - 🎨 **Optimized Output**: Automatic compression and optimization
 - 📱 **Modern UI**: Beautiful, responsive web interface
-- 🚀 **Easy to Use**: Drag & drop or click to upload
+- 🚀 **Client-Side**: Everything runs in your browser - no server needed!
 - ⚙️ **Customizable**: Adjust quality, resolution, and frame rate
+- 📝 **GitHub README Preset**: Optimized settings for GitHub documentation
 
-## Prerequisites
+## Hosting on GitHub Pages
 
-- **Node.js** (v14 or higher)
-- **FFmpeg** installed on your system
+This is a single-page application that can be hosted on GitHub Pages:
 
-### Installing FFmpeg
+1. **Create a GitHub repository**
+2. **Copy the files** from the `gh-pages` folder to your repository root
+3. **Enable GitHub Pages** in your repository settings:
+   - Go to Settings → Pages
+   - Select your branch (usually `main`)
+   - Save
+4. **Your app will be live** at `https://<username>.github.io/<repository-name>/`
 
-**macOS:**
-```bash
-brew install ffmpeg
-```
-
-**Ubuntu/Debian:**
-```bash
-sudo apt update
-sudo apt install ffmpeg
-```
-
-**Windows:**
-Download from [ffmpeg.org](https://ffmpeg.org/download.html) or use:
-```bash
-choco install ffmpeg
-```
-
-## Installation
-
-1. Install dependencies:
-```bash
-npm install
-```
-
-## Usage
-
-### Start the Web Server
-
-```bash
-npm start
-```
-
-Or for development with auto-reload:
-```bash
-npm run dev
-```
-
-The server will start on `http://localhost:3000`
-
-### Using the Web Interface
-
-1. Open your browser and navigate to `http://localhost:3000`
-2. Drag & drop a video file or click to browse
-3. Select your desired output format (MP4, WebM, or GIF)
-4. (Optional) Adjust advanced options:
-   - Resolution width
-   - Quality (CRF)
-   - Frame rate (for GIFs)
-5. Click "Convert Video"
-6. Download your converted file when ready
-
-### Supported Input Formats
-
-- MOV (QuickTime)
-- MP4
-- AVI
-- MKV
-- WebM
-
-### Output Formats
-
-- **MP4**: H.264 encoded, optimized for web playback
-- **WebM**: VP9 encoded, often smaller file sizes
-- **GIF**: Animated GIF with optimized palette, perfect for GitHub
-
-## Original Shell Scripts
-
-The original command-line scripts are still available:
-
-- `convert-video.sh` - Convert video to MP4 and WebM
-- `convert-to-gif.sh` - Convert MP4 to animated GIF
-- `activate-video.sh` - Convert and activate video in documentation
-
-## Project Structure
+## Files Structure
 
 ```
-media-converter-toolkit/
-├── server.js              # Express backend server
-├── package.json           # Node.js dependencies
-├── public/                # Frontend files
-│   ├── index.html         # Main HTML page
-│   ├── styles.css         # Styling
-│   └── app.js            # Frontend JavaScript
-├── uploads/              # Temporary upload directory (auto-created)
-├── outputs/              # Converted files directory (auto-created)
-└── *.sh                  # Original shell scripts
+gh-pages/
+├── index.html      # Main HTML page
+├── styles.css      # Styling
+├── app.js          # Client-side conversion logic using FFmpeg.wasm
+└── README.md       # This file
 ```
 
-## API Endpoints
+## How It Works
 
-- `POST /api/convert` - Upload and convert a video file
-- `GET /api/download/:filename` - Download a converted file
-- `POST /api/cleanup` - Clean up old files (older than 24 hours)
+- Uses [FFmpeg.wasm](https://ffmpeg.wasm.org/) - a WebAssembly port of FFmpeg
+- All processing happens in your browser
+- No data is sent to any server - completely private
+- Files are processed locally using your device's resources
 
-## Notes
+## Browser Compatibility
 
-- Maximum file size: 500MB
-- Converted files are automatically cleaned up after 24 hours
-- The web interface provides a more user-friendly alternative to the command-line scripts
+- Chrome/Edge: ✅ Full support
+- Firefox: ✅ Full support
+- Safari: ✅ Full support (may be slower)
+- Mobile browsers: ⚠️ Limited (large files may cause issues)
+
+## Limitations
+
+- File size: Recommended max 100MB for best performance
+- Processing time: Depends on your device's CPU
+- Memory: Large files may require significant RAM
 
 ## License
 
