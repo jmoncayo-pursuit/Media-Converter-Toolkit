@@ -97,13 +97,9 @@ async function initFFmpeg() {
     
     // Check if we found FFmpeg after waiting
     if (attempts >= maxAttempts && !window.createFFmpeg && !window.FFmpegWASM && !window.FFmpeg) {
-        console.error('FFmpeg globals check failed. Available window keys:', Object.keys(window).filter(k => k.toLowerCase().includes('ffmpeg')));
-        throw new Error('FFmpeg scripts failed to load. Please check your internet connection and refresh the page.');
-    }
-    
-    // Check if we found FFmpeg after waiting
-    if (attempts >= maxAttempts && !window.FFmpegWASM && !window.FFmpeg && !window.createFFmpeg) {
-        console.error('FFmpeg globals check failed. Available window keys:', Object.keys(window).filter(k => k.toLowerCase().includes('ffmpeg')));
+        console.error('FFmpeg globals check failed after', maxAttempts, 'attempts');
+        console.error('Available FFmpeg-related keys:', Object.keys(window).filter(k => k.toLowerCase().includes('ffmpeg') || k.toLowerCase().includes('wasm')));
+        console.error('Script loading status - createFFmpeg:', typeof window.createFFmpeg, 'FFmpegWASM:', typeof window.FFmpegWASM, 'FFmpeg:', typeof window.FFmpeg);
         throw new Error('FFmpeg scripts failed to load. Please check your internet connection and refresh the page.');
     }
     
