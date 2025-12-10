@@ -79,6 +79,10 @@ async function initFFmpeg() {
     
     while (attempts < maxAttempts) {
         // Check for the expected globals on window object
+        // Version 0.10.1 uses createFFmpeg (prioritize this)
+        if (window.createFFmpeg && typeof window.createFFmpeg === 'function') {
+            break; // Found it! (Version 0.10.1)
+        }
         // Version 0.11.6 UMD exports as window.FFmpegWASM.FFmpeg
         if (window.FFmpegWASM && window.FFmpegWASM.FFmpeg) {
             break; // Found it!
@@ -87,12 +91,14 @@ async function initFFmpeg() {
         if (window.FFmpeg && typeof window.FFmpeg === 'function') {
             break; // Alternative global name
         }
-        // Older API (0.10.x)
-        if (window.createFFmpeg && typeof window.createFFmpeg === 'function') {
-            break; // Older API
-        }
         await new Promise(resolve => setTimeout(resolve, 100));
         attempts++;
+    }
+    
+    // Check if we found FFmpeg after waiting
+    if (attempts >= maxAttempts && !window.createFFmpeg && !window.FFmpegWASM && !window.FFmpeg) {
+        console.error('FFmpeg globals check failed. Available window keys:', Object.keys(window).filter(k => k.toLowerCase().includes('ffmpeg')));
+        throw new Error('FFmpeg scripts failed to load. Please check your internet connection and refresh the page.');
     }
     
     // Check if we found FFmpeg after waiting
