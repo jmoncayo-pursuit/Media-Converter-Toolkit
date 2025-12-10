@@ -1,7 +1,7 @@
 // Import FFmpeg.wasm as ES module (avoids CORS issues on GitHub Pages)
-// Using unpkg.com which has better ES module support
-import { FFmpeg } from 'https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/esm/ffmpeg.js';
-import { fetchFile } from 'https://unpkg.com/@ffmpeg/util@0.12.1/dist/esm/util.js';
+// Using esm.sh which is designed for ES modules and has proper CORS headers
+import { FFmpeg } from 'https://esm.sh/@ffmpeg/ffmpeg@0.12.10';
+import { fetchFile } from 'https://esm.sh/@ffmpeg/util@0.12.1';
 
 // FFmpeg instance
 let ffmpeg = null;
@@ -88,10 +88,10 @@ async function initFFmpeg() {
             console.log(message);
         });
         
-        // Use unpkg CDN for core files (same origin as main imports)
+        // Use esm.sh CDN for core files (same CDN, proper CORS support)
         await ffmpeg.load({
-            coreURL: 'https://unpkg.com/@ffmpeg/core@0.12.10/dist/esm/ffmpeg-core.js',
-            wasmURL: 'https://unpkg.com/@ffmpeg/core@0.12.10/dist/esm/ffmpeg-core.wasm'
+            coreURL: 'https://esm.sh/@ffmpeg/core@0.12.10/dist/esm/ffmpeg-core.js',
+            wasmURL: 'https://esm.sh/@ffmpeg/core@0.12.10/dist/esm/ffmpeg-core.wasm'
         });
         
         // Set up progress tracking
