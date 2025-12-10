@@ -192,8 +192,20 @@
     </div>
 
     <!-- FFmpeg.wasm - Using older version (0.11.x) that works without SharedArrayBuffer -->
-    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.11.6/dist/umd/ffmpeg.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.11.1/dist/umd/util.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.11.6/dist/umd/ffmpeg.js" onload="console.log('FFmpeg script loaded')"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.11.1/dist/umd/util.js" onload="console.log('FFmpegUtil script loaded')"></script>
+    <script>
+        // Wait for scripts to load before initializing app
+        window.addEventListener('load', function() {
+            // Check what globals are available
+            console.log('Available globals:', Object.keys(window).filter(k => k.includes('FFmpeg') || k.includes('ffmpeg')));
+            if (typeof FFmpegWASM !== 'undefined') {
+                console.log('FFmpegWASM is available');
+            } else if (typeof createFFmpeg !== 'undefined') {
+                console.log('createFFmpeg is available (older API)');
+            }
+        });
+    </script>
     <script src="app.js"></script>
 </body>
 </html>

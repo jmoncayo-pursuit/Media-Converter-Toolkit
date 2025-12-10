@@ -68,14 +68,28 @@ const presets = {
 async function initFFmpeg() {
     if (ffmpegLoaded) return;
     
-    // Check if FFmpegWASM is available (might not be loaded yet)
-    if (typeof FFmpegWASM === 'undefined') {
-        console.warn('FFmpegWASM not loaded yet, waiting...');
-        // Wait a bit for scripts to load
-        await new Promise(resolve => setTimeout(resolve, 100));
-        if (typeof FFmpegWASM === 'undefined') {
-            throw new Error('FFmpegWASM failed to load. Please refresh the page.');
+    // Check if FFmpeg is available - try different global variable names
+    let FFmpegClass = null;
+    let UtilClass = null;
+    
+    // Wait for scripts to load (with timeout)
+    let attempts = 0;
+    while (attempts < 50) { // 5 seconds max wait
+        if (typeof FFmpegWASM !== 'undefined' && FFmpegWASM.FFmpeg) {
+            FFmpegClass = FFmpegWASM.FFmpeg;
+            UtilClass = FFmpegUtil;
+            break;
+        } else if (typeof createFFmpeg !== 'undefined') {
+            // Older API - use createFFmpeg
+            FFmpegClass = createFFmpeg;
+            break;
         }
+        await new Promise(resolve => setTimeout(resolve, 100));
+        attempts++;
+    }
+    
+    if (!FFmpegClass) {
+        throw new Error('FFmpeg scripts failed to load. Please check your internet connection and refresh the page.');
     }
     
     // Ensure DOM elements are available (only show progress if elements exist)
@@ -87,9 +101,15 @@ async function initFFmpeg() {
             progressBar.style.width = '10%';
         }
         
-        // Create FFmpeg instance (from global UMD script)
-        const { FFmpeg } = FFmpegWASM;
-        ffmpeg = new FFmpeg();
+        // Create FFmpeg instance
+        if (typeof createFFmpeg !== 'undefined') {
+            // Older API
+            ffmpeg = createFFmpeg({ log: true });
+        } else {
+            // Newer API
+            const { FFmpeg } = FFmpegWASM;
+            ffmpeg = new FFmpeg();
+        }
         
         // Configure logging and progress
         ffmpeg.on('log', ({ message }) => {
@@ -322,9 +342,18 @@ convertBtn.addEventListener('click', async () => {
         progressText.textContent = 'Reading video file...';
         progressBar.style.width = '10%';
         
-        // Use fetchFile from global FFmpegUtil
-        const { fetchFile } = FFmpegUtil;
-        await ffmpeg.writeFile('input', await fetchFile(selectedFile));
+        // Use fetchFile - try different ways to get it
+        let fileData;
+        if (typeof FFmpegUtil !== 'undefined' && FFmpegUtil.fetchFile) {
+            fileData = await FFmpegUtil.fetchFile(selectedFile);
+        } else if (typeof fetchFile !== 'undefined') {
+            fileData = await fetchFile(selectedFile);
+        } else {
+            // Fallback: read file as ArrayBuffer
+            fileData = await selectedFile.arrayBuffer();
+            fileData = new Uint8Array(fileData);
+        }
+        await ffmpeg.writeFile('input', fileData);
         
         progressBar.style.width = '20%';
         progressText.textContent = 'Converting...';
