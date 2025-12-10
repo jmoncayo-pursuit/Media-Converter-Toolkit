@@ -69,15 +69,15 @@ async function initFFmpeg() {
         progressText.textContent = 'Loading FFmpeg...';
         progressBar.style.width = '10%';
         
-        // FFmpegWASM is available globally from the CDN script
+        // FFmpegWASM is available globally from jsDelivr CDN script
         const { FFmpeg } = FFmpegWASM;
         ffmpeg = new FFmpeg();
         
-        // Set base URL for FFmpeg core files (WASM and worker)
-        // Using same version as main script for compatibility
+        // Use jsDelivr CDN for core files (better CORS support for GitHub Pages)
+        // jsDelivr has proper CORS headers that work with GitHub Pages
         await ffmpeg.load({
-            coreURL: 'https://unpkg.com/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core.js',
-            wasmURL: 'https://unpkg.com/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core.wasm'
+            coreURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core.js',
+            wasmURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core.wasm'
         });
         
         // Set up logging
