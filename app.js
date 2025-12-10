@@ -88,11 +88,14 @@ async function initFFmpeg() {
         });
         
         // Use jsdelivr for all files (better CORS support for workers)
-        // Configure worker URL to avoid CORS issues on GitHub Pages
+        // Try to load without requiring SharedArrayBuffer (works without headers)
         await ffmpeg.load({
             coreURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core.js',
             wasmURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core.wasm',
-            workerURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core.worker.js'
+            workerURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core.worker.js',
+            // Disable SharedArrayBuffer to work without headers (slower but works)
+            mainName: 'main',
+            wasmPath: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd/'
         });
         
         // Set up progress tracking
