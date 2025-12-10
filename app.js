@@ -88,10 +88,11 @@ async function initFFmpeg() {
             console.log(message);
         });
         
-        // Use esm.sh CDN for core files (same CDN, proper CORS support)
+        // Use jsdelivr for core files (more reliable for WASM files)
+        // esm.sh is great for JS modules but jsdelivr handles WASM better
         await ffmpeg.load({
-            coreURL: 'https://esm.sh/@ffmpeg/core@0.12.10/dist/esm/ffmpeg-core.js',
-            wasmURL: 'https://esm.sh/@ffmpeg/core@0.12.10/dist/esm/ffmpeg-core.wasm'
+            coreURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core.js',
+            wasmURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core.wasm'
         });
         
         // Set up progress tracking
