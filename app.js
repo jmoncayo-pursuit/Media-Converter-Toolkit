@@ -253,10 +253,13 @@ function handleFileSelect(file) {
     resultSection.style.display = 'none';
     errorSection.style.display = 'none';
     
-    // Initialize FFmpeg when file is selected
-    initFFmpeg().catch(err => {
-        console.error('FFmpeg initialization error:', err);
-    });
+    // Initialize FFmpeg in background (non-blocking)
+    // Don't wait for it - let it load while user selects options
+    if (!ffmpegLoaded) {
+        initFFmpeg().catch(err => {
+            console.error('FFmpeg initialization error:', err);
+        });
+    }
 }
 
 // Remove file handler
@@ -544,14 +547,22 @@ function formatFileSize(bytes) {
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
 }
 
-// Initialize when DOM is ready (ES modules defer automatically, but ensure everything is set up)
+// Initialize when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         // Initialize preset
         applyPreset('github-readme');
+        // Start loading FFmpeg immediately (non-blocking)
+        initFFmpeg().catch(err => {
+            console.warn('FFmpeg preload failed, will retry on file select:', err);
+        });
     });
 } else {
     // DOM already loaded
     applyPreset('github-readme');
+    // Start loading FFmpeg immediately (non-blocking)
+    initFFmpeg().catch(err => {
+        console.warn('FFmpeg preload failed, will retry on file select:', err);
+    });
 }
 
