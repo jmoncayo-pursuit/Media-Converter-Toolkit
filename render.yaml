@@ -3,6 +3,7 @@ services:
     name: media-converter-toolkit
     plan: free
     dockerfilePath: ./Dockerfile
+    dockerContext: .
     envVars:
       - key: NODE_ENV
         value: production
