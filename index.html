@@ -191,9 +191,9 @@
         </footer>
     </div>
 
-    <!-- FFmpeg.wasm - Using older version (0.11.x) that works without SharedArrayBuffer -->
-    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.11.6/dist/umd/ffmpeg.js" onload="console.log('FFmpeg script loaded')"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.11.1/dist/umd/util.js" onload="console.log('FFmpegUtil script loaded')"></script>
+    <!-- FFmpeg.wasm - Using version 0.10.1 which has better UMD support -->
+    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.10.1/dist/umd/ffmpeg.js" onload="console.log('FFmpeg script loaded'); console.log('createFFmpeg available:', typeof createFFmpeg !== 'undefined')"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.10.0/dist/umd/util.js" onload="console.log('FFmpegUtil script loaded')"></script>
     <script>
         // Debug: Check what globals are available after scripts load
         window.addEventListener('load', function() {
