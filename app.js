@@ -1,3 +1,7 @@
+// Import FFmpeg.wasm as ES module (avoids CORS issues on GitHub Pages)
+import { FFmpeg } from 'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm/ffmpeg.js';
+import { fetchFile } from 'https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/esm/util.js';
+
 // FFmpeg instance
 let ffmpeg = null;
 let ffmpegLoaded = false;
@@ -69,20 +73,19 @@ async function initFFmpeg() {
         progressText.textContent = 'Loading FFmpeg...';
         progressBar.style.width = '10%';
         
-        // FFmpegWASM is available globally from jsDelivr CDN script
-        const { FFmpeg } = FFmpegWASM;
+        // Create FFmpeg instance
         ffmpeg = new FFmpeg();
         
-        // Use jsDelivr CDN for core files (better CORS support for GitHub Pages)
-        // jsDelivr has proper CORS headers that work with GitHub Pages
-        await ffmpeg.load({
-            coreURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core.js',
-            wasmURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core.wasm'
-        });
-        
-        // Set up logging
+        // Configure logging and progress
         ffmpeg.on('log', ({ message }) => {
             console.log(message);
+        });
+        
+        // Use jsDelivr CDN for core files with ES module paths
+        // ES modules work better with GitHub Pages CORS policies
+        await ffmpeg.load({
+            coreURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/esm/ffmpeg-core.js',
+            wasmURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/esm/ffmpeg-core.wasm'
         });
         
         // Set up progress tracking
@@ -299,8 +302,7 @@ convertBtn.addEventListener('click', async () => {
         progressText.textContent = 'Reading video file...';
         progressBar.style.width = '10%';
         
-        const inputData = await selectedFile.arrayBuffer();
-        await ffmpeg.writeFile('input', new Uint8Array(inputData));
+        await ffmpeg.writeFile('input', await fetchFile(selectedFile));
         
         progressBar.style.width = '20%';
         progressText.textContent = 'Converting...';
@@ -356,8 +358,8 @@ convertBtn.addEventListener('click', async () => {
         const outputFile = format === 'gif' ? 'output.gif' : format === 'mp4' ? 'output.mp4' : 'output.webm';
         const data = await ffmpeg.readFile(outputFile);
         
-        // Create blob URL
-        const blob = new Blob([data.buffer], { 
+        // Create blob URL (data is already a Uint8Array)
+        const blob = new Blob([data], { 
             type: format === 'gif' ? 'image/gif' : format === 'mp4' ? 'video/mp4' : 'video/webm' 
         });
         const url = URL.createObjectURL(blob);
