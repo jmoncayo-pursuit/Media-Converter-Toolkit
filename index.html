@@ -209,9 +209,12 @@
                 );
                 console.log('FFmpeg-related globals:', ffmpegKeys);
                 ffmpegKeys.forEach(key => {
-                    console.log(`  ${key}:`, typeof window[key], window[key]);
+                    console.log(`  ${key}:`, typeof window[key]);
                 });
-            }, 2000);
+                // Check specifically for createFFmpeg
+                console.log('createFFmpeg check:', typeof createFFmpeg, typeof window.createFFmpeg);
+                console.log('All window keys containing "create":', Object.keys(window).filter(k => k.toLowerCase().includes('create')));
+            }, 3000); // Wait longer for scripts to load
         });
     </script>
     <script src="app.js"></script>
