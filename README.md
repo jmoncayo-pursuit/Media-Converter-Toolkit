@@ -1,59 +1,63 @@
 # Media Converter Toolkit
 
-A client-side media conversion tool that runs entirely in your browser. Convert videos to optimized web formats (MP4, WebM, GIF) using FFmpeg.wasm - no server required!
+A web-based media conversion tool for converting videos to optimized formats (MP4, WebM, GIF).
+
+## Quick Start
+
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+2. **Install FFmpeg** (required):
+   ```bash
+   # macOS
+   brew install ffmpeg
+   
+   # Linux (Ubuntu/Debian)
+   sudo apt-get install ffmpeg
+   
+   # Windows
+   # Download from https://ffmpeg.org/download.html
+   ```
+
+3. **Start the server:**
+   ```bash
+   npm start
+   ```
+
+4. **Open your browser:**
+   ```
+   http://localhost:3000
+   ```
 
 ## Features
 
-- 🎬 **Multiple Formats**: Convert to MP4, WebM, or animated GIF
-- 🎨 **Optimized Output**: Automatic compression and optimization
-- 📱 **Modern UI**: Beautiful, responsive web interface
-- 🚀 **Client-Side**: Everything runs in your browser - no server needed!
-- ⚙️ **Customizable**: Adjust quality, resolution, and frame rate
-- 📝 **GitHub README Preset**: Optimized settings for GitHub documentation
+- Convert videos to MP4, WebM, or animated GIF
+- Optimize quality, resolution, and frame rate
+- Preserve original filenames
+- Preview converted files before downloading
 
-## Hosting on GitHub Pages
-
-This is a single-page application that can be hosted on GitHub Pages:
-
-1. **Create a GitHub repository**
-2. **Copy the files** from the `gh-pages` folder to your repository root
-3. **Enable GitHub Pages** in your repository settings:
-   - Go to Settings → Pages
-   - Select your branch (usually `main`)
-   - Save
-4. **Your app will be live** at `https://<username>.github.io/<repository-name>/`
-
-## Files Structure
+## Project Structure
 
 ```
-gh-pages/
-├── index.html      # Main HTML page
-├── styles.css      # Styling
-├── app.js          # Client-side conversion logic using FFmpeg.wasm
-└── README.md       # This file
+├── server.js          # Express server with conversion logic
+├── package.json       # Dependencies
+├── public/            # Frontend files
+│   ├── index.html     # Main interface
+│   ├── app.js         # Client-side JavaScript
+│   └── styles.css     # Styling
+├── uploads/           # Temporary upload storage (gitignored)
+└── outputs/           # Converted files (gitignored)
 ```
 
-## How It Works
+## Scripts
 
-- Uses [FFmpeg.wasm](https://ffmpeg.wasm.org/) - a WebAssembly port of FFmpeg
-- All processing happens in your browser
-- No data is sent to any server - completely private
-- Files are processed locally using your device's resources
+- `npm start` - Start the server
+- `npm run dev` - Start with auto-reload (requires nodemon)
 
-## Browser Compatibility
+## Requirements
 
-- Chrome/Edge: ✅ Full support
-- Firefox: ✅ Full support
-- Safari: ✅ Full support (may be slower)
-- Mobile browsers: ⚠️ Limited (large files may cause issues)
-
-## Limitations
-
-- File size: Recommended max 100MB for best performance
-- Processing time: Depends on your device's CPU
-- Memory: Large files may require significant RAM
-
-## License
-
-MIT
-
+- Node.js
+- FFmpeg installed on your system
+- npm or yarn

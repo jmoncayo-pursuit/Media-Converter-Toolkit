@@ -18,9 +18,6 @@ outputs/
 # But allow original scripts/docs that reference these formats
 !*.sh
 !*.md
-!gh-pages/**/*.html
-!gh-pages/**/*.js
-!gh-pages/**/*.css
 
 # Environment files
 .env
