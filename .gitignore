@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Server-generated files and outputs
+uploads/
+outputs/
+*.log
+
+# Converted media files (all formats)
+*.gif
+*.mp4
+*.webm
+*.mov
+*.avi
+*.mkv
+
+# But allow original scripts/docs that reference these formats
+!*.sh
+!*.md
+!gh-pages/**/*.html
+!gh-pages/**/*.js
+!gh-pages/**/*.css
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Server logs
+server.log
+/tmp/
