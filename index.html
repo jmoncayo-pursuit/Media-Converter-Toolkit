@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Media Converter Toolkit</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>">
-    <!-- Try to enable SharedArrayBuffer if possible, but fallback works without it -->
-    <meta http-equiv="Cross-Origin-Embedder-Policy" content="credentialless">
-    <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -194,9 +191,9 @@
         </footer>
     </div>
 
-    <!-- FFmpeg.wasm - Using UMD version to avoid worker CORS issues -->
-    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/umd/util.js"></script>
+    <!-- FFmpeg.wasm - Using older version (0.11.x) that works without SharedArrayBuffer -->
+    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.11.6/dist/umd/ffmpeg.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.11.1/dist/umd/util.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
