@@ -402,7 +402,29 @@ convertBtn.addEventListener('click', async () => {
 
     } catch (error) {
         console.error('Conversion error:', error);
-        showError(error.message || 'An error occurred during conversion. Make sure your video file is valid.');
+        console.error('Error details:', {
+            name: error.name,
+            message: error.message,
+            stack: error.stack
+        });
+        
+        // Provide more helpful error messages
+        let errorMsg = 'An error occurred during conversion. ';
+        if (error.message) {
+            if (error.message.includes('not found') || error.message.includes('404')) {
+                errorMsg += 'FFmpeg files failed to load. Please refresh the page.';
+            } else if (error.message.includes('Worker') || error.message.includes('CORS')) {
+                errorMsg += 'CORS error detected. Please try refreshing the page.';
+            } else if (error.message.includes('Invalid') || error.message.includes('format')) {
+                errorMsg += 'Invalid video format. Please try a different file.';
+            } else {
+                errorMsg += error.message;
+            }
+        } else {
+            errorMsg += 'Make sure your video file is valid and try again.';
+        }
+        
+        showError(errorMsg);
     } finally {
         progressSection.style.display = 'none';
     }
@@ -462,8 +484,13 @@ function showPreview(fileUrl, fileName) {
 
 // Show error
 function showError(message) {
-    errorMessage.textContent = message;
-    errorSection.style.display = 'block';
+    if (errorMessage) {
+        errorMessage.textContent = message;
+    }
+    if (errorSection) {
+        errorSection.style.display = 'block';
+    }
+    console.error('User-facing error:', message);
 }
 
 // New conversion handler
