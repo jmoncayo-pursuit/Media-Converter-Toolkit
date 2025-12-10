@@ -1,6 +1,6 @@
 // Import FFmpeg.wasm as ES module (avoids CORS issues on GitHub Pages)
-import { FFmpeg } from 'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm/ffmpeg.js';
-import { fetchFile } from 'https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/esm/util.js';
+import { FFmpeg } from 'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/+esm';
+import { fetchFile } from 'https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/+esm';
 
 // FFmpeg instance
 let ffmpeg = null;
@@ -87,11 +87,11 @@ async function initFFmpeg() {
             console.log(message);
         });
         
-        // Use jsDelivr CDN for core files with ES module paths
-        // ES modules work better with GitHub Pages CORS policies
+        // Use jsDelivr CDN for core files
+        // Using UMD paths as they're more reliable with jsdelivr
         await ffmpeg.load({
-            coreURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/esm/ffmpeg-core.js',
-            wasmURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/esm/ffmpeg-core.wasm'
+            coreURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core.js',
+            wasmURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core.wasm'
         });
         
         // Set up progress tracking
