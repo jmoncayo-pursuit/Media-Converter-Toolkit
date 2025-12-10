@@ -2,6 +2,10 @@
 
 A web-based media conversion tool for converting videos to optimized formats (MP4, WebM, GIF).
 
+**🌐 Live Demo:** [https://media-converter-toolkit.onrender.com](https://media-converter-toolkit.onrender.com)
+
+![Media Converter Toolkit](screenshot.png)
+
 ## Quick Start
 
 1. **Install dependencies:**
@@ -37,12 +41,22 @@ A web-based media conversion tool for converting videos to optimized formats (MP
 - Optimize quality, resolution, and frame rate
 - Preserve original filenames
 - Preview converted files before downloading
+- Quick presets for GitHub README and web optimization
+
+## Future Features
+
+- ✂️ **Clip Editing/Cropping**: Extract specific segments from videos to create GIFs
+- 🔗 **Media Combining**: Merge multiple videos or images into a single file
+- 🎨 **Advanced Filters**: Apply effects and filters during conversion
+- 📊 **Batch Processing**: Convert multiple files at once
 
 ## Project Structure
 
 ```
 ├── server.js          # Express server with conversion logic
 ├── package.json       # Dependencies
+├── Dockerfile         # Docker configuration for deployment
+├── render.yaml        # Render.com deployment configuration
 ├── public/            # Frontend files
 │   ├── index.html     # Main interface
 │   ├── app.js         # Client-side JavaScript
@@ -61,3 +75,11 @@ A web-based media conversion tool for converting videos to optimized formats (MP
 - Node.js
 - FFmpeg installed on your system
 - npm or yarn
+
+## Deployment
+
+This app is configured for deployment on Render.com using Docker. The `render.yaml` and `Dockerfile` handle automatic FFmpeg installation and deployment.
+
+## License
+
+MIT
