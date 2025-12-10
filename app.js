@@ -164,9 +164,6 @@ presetButtons.forEach(btn => {
     });
 });
 
-// Initialize with GitHub README preset (GIF default)
-applyPreset('github-readme');
-
 // Format change handler
 formatRadios.forEach(radio => {
     radio.addEventListener('change', () => {
