@@ -195,15 +195,19 @@
     <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.11.6/dist/umd/ffmpeg.js" onload="console.log('FFmpeg script loaded')"></script>
     <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.11.1/dist/umd/util.js" onload="console.log('FFmpegUtil script loaded')"></script>
     <script>
-        // Wait for scripts to load before initializing app
+        // Debug: Check what globals are available after scripts load
         window.addEventListener('load', function() {
-            // Check what globals are available
-            console.log('Available globals:', Object.keys(window).filter(k => k.includes('FFmpeg') || k.includes('ffmpeg')));
-            if (typeof FFmpegWASM !== 'undefined') {
-                console.log('FFmpegWASM is available');
-            } else if (typeof createFFmpeg !== 'undefined') {
-                console.log('createFFmpeg is available (older API)');
-            }
+            setTimeout(function() {
+                const ffmpegKeys = Object.keys(window).filter(k => 
+                    k.toLowerCase().includes('ffmpeg') || 
+                    k.toLowerCase().includes('wasm') ||
+                    k === 'createFFmpeg'
+                );
+                console.log('FFmpeg-related globals:', ffmpegKeys);
+                ffmpegKeys.forEach(key => {
+                    console.log(`  ${key}:`, typeof window[key], window[key]);
+                });
+            }, 2000);
         });
     </script>
     <script src="app.js"></script>
