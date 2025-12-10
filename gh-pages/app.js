@@ -1,3 +1,6 @@
+// FFmpeg.wasm loaded via UMD script tags (avoids worker CORS issues)
+// FFmpegWASM and FFmpegUtil are available globally from CDN scripts
+
 // FFmpeg instance
 let ffmpeg = null;
 let ffmpegLoaded = false;
@@ -65,23 +68,59 @@ const presets = {
 async function initFFmpeg() {
     if (ffmpegLoaded) return;
     
+    // Check if FFmpeg is available - try different global variable names
+    let FFmpegClass = null;
+    let UtilClass = null;
+    
+    // Wait for scripts to load (with timeout)
+    let attempts = 0;
+    while (attempts < 50) { // 5 seconds max wait
+        if (typeof FFmpegWASM !== 'undefined' && FFmpegWASM.FFmpeg) {
+            FFmpegClass = FFmpegWASM.FFmpeg;
+            UtilClass = FFmpegUtil;
+            break;
+        } else if (typeof createFFmpeg !== 'undefined') {
+            // Older API - use createFFmpeg
+            FFmpegClass = createFFmpeg;
+            break;
+        }
+        await new Promise(resolve => setTimeout(resolve, 100));
+        attempts++;
+    }
+    
+    if (!FFmpegClass) {
+        throw new Error('FFmpeg scripts failed to load. Please check your internet connection and refresh the page.');
+    }
+    
+    // Ensure DOM elements are available (only show progress if elements exist)
+    const showProgress = progressText && progressBar;
+    
     try {
-        progressText.textContent = 'Loading FFmpeg...';
-        progressBar.style.width = '10%';
+        if (showProgress) {
+            progressText.textContent = 'Loading FFmpeg...';
+            progressBar.style.width = '10%';
+        }
         
-        // FFmpegWASM is available globally from the CDN script
-        const { FFmpeg } = FFmpegWASM;
-        ffmpeg = new FFmpeg();
+        // Create FFmpeg instance
+        if (typeof createFFmpeg !== 'undefined') {
+            // Older API
+            ffmpeg = createFFmpeg({ log: true });
+        } else {
+            // Newer API
+            const { FFmpeg } = FFmpegWASM;
+            ffmpeg = new FFmpeg();
+        }
         
-        // Set base URL for FFmpeg core files (WASM and worker)
-        await ffmpeg.load({
-            coreURL: 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js',
-            wasmURL: 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.wasm'
-        });
-        
-        // Set up logging
+        // Configure logging and progress
         ffmpeg.on('log', ({ message }) => {
             console.log(message);
+        });
+        
+        // Use older version (0.11.x) that works without SharedArrayBuffer/headers
+        // This version doesn't require cross-origin isolation headers
+        await ffmpeg.load({
+            coreURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.11.0/dist/umd/ffmpeg-core.js',
+            wasmURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.11.0/dist/umd/ffmpeg-core.wasm'
         });
         
         // Set up progress tracking
@@ -93,13 +132,18 @@ async function initFFmpeg() {
         
         // FFmpeg is already loaded via load() call above
         ffmpegLoaded = true;
-        progressBar.style.width = '100%';
-        progressText.textContent = 'Ready!';
+        if (showProgress) {
+            progressBar.style.width = '100%';
+            progressText.textContent = 'Ready!';
+        }
         
         console.log('FFmpeg loaded successfully');
     } catch (error) {
         console.error('Failed to load FFmpeg:', error);
-        showError('Failed to initialize FFmpeg. Please refresh the page.');
+        // Only show error if DOM is ready and user is interacting
+        if (showProgress) {
+            showError('Failed to initialize FFmpeg. Please refresh the page.');
+        }
         throw error;
     }
 }
@@ -153,9 +197,6 @@ presetButtons.forEach(btn => {
         applyPreset(btn.dataset.preset);
     });
 });
-
-// Initialize with GitHub README preset (GIF default)
-applyPreset('github-readme');
 
 // Format change handler
 formatRadios.forEach(radio => {
@@ -246,10 +287,13 @@ function handleFileSelect(file) {
     resultSection.style.display = 'none';
     errorSection.style.display = 'none';
     
-    // Initialize FFmpeg when file is selected
-    initFFmpeg().catch(err => {
-        console.error('FFmpeg initialization error:', err);
-    });
+    // Initialize FFmpeg in background (non-blocking)
+    // Don't wait for it - let it load while user selects options
+    if (!ffmpegLoaded) {
+        initFFmpeg().catch(err => {
+            console.error('FFmpeg initialization error:', err);
+        });
+    }
 }
 
 // Remove file handler
@@ -298,8 +342,18 @@ convertBtn.addEventListener('click', async () => {
         progressText.textContent = 'Reading video file...';
         progressBar.style.width = '10%';
         
-        const inputData = await selectedFile.arrayBuffer();
-        await ffmpeg.writeFile('input', new Uint8Array(inputData));
+        // Use fetchFile - try different ways to get it
+        let fileData;
+        if (window.FFmpegUtil && window.FFmpegUtil.fetchFile) {
+            fileData = await window.FFmpegUtil.fetchFile(selectedFile);
+        } else if (window.fetchFile && typeof window.fetchFile === 'function') {
+            fileData = await window.fetchFile(selectedFile);
+        } else {
+            // Fallback: read file as ArrayBuffer
+            fileData = await selectedFile.arrayBuffer();
+            fileData = new Uint8Array(fileData);
+        }
+        await ffmpeg.writeFile('input', fileData);
         
         progressBar.style.width = '20%';
         progressText.textContent = 'Converting...';
@@ -355,8 +409,8 @@ convertBtn.addEventListener('click', async () => {
         const outputFile = format === 'gif' ? 'output.gif' : format === 'mp4' ? 'output.mp4' : 'output.webm';
         const data = await ffmpeg.readFile(outputFile);
         
-        // Create blob URL
-        const blob = new Blob([data.buffer], { 
+        // Create blob URL (data is already a Uint8Array)
+        const blob = new Blob([data], { 
             type: format === 'gif' ? 'image/gif' : format === 'mp4' ? 'video/mp4' : 'video/webm' 
         });
         const url = URL.createObjectURL(blob);
@@ -395,7 +449,29 @@ convertBtn.addEventListener('click', async () => {
 
     } catch (error) {
         console.error('Conversion error:', error);
-        showError(error.message || 'An error occurred during conversion. Make sure your video file is valid.');
+        console.error('Error details:', {
+            name: error.name,
+            message: error.message,
+            stack: error.stack
+        });
+        
+        // Provide more helpful error messages
+        let errorMsg = 'An error occurred during conversion. ';
+        if (error.message) {
+            if (error.message.includes('not found') || error.message.includes('404')) {
+                errorMsg += 'FFmpeg files failed to load. Please refresh the page.';
+            } else if (error.message.includes('Worker') || error.message.includes('CORS')) {
+                errorMsg += 'CORS error detected. Please try refreshing the page.';
+            } else if (error.message.includes('Invalid') || error.message.includes('format')) {
+                errorMsg += 'Invalid video format. Please try a different file.';
+            } else {
+                errorMsg += error.message;
+            }
+        } else {
+            errorMsg += 'Make sure your video file is valid and try again.';
+        }
+        
+        showError(errorMsg);
     } finally {
         progressSection.style.display = 'none';
     }
@@ -455,8 +531,13 @@ function showPreview(fileUrl, fileName) {
 
 // Show error
 function showError(message) {
-    errorMessage.textContent = message;
-    errorSection.style.display = 'block';
+    if (errorMessage) {
+        errorMessage.textContent = message;
+    }
+    if (errorSection) {
+        errorSection.style.display = 'block';
+    }
+    console.error('User-facing error:', message);
 }
 
 // New conversion handler
@@ -507,5 +588,24 @@ function formatFileSize(bytes) {
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+}
+
+// Initialize when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        // Initialize preset
+        applyPreset('github-readme');
+        // Start loading FFmpeg immediately (non-blocking)
+        initFFmpeg().catch(err => {
+            console.warn('FFmpeg preload failed, will retry on file select:', err);
+        });
+    });
+} else {
+    // DOM already loaded
+    applyPreset('github-readme');
+    // Start loading FFmpeg immediately (non-blocking)
+    initFFmpeg().catch(err => {
+        console.warn('FFmpeg preload failed, will retry on file select:', err);
+    });
 }
 
